@@ -1,3 +1,4 @@
+
 import os
 import logging
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
@@ -37,6 +38,7 @@ async def handle_calculation(update: Update, context: ContextTypes.DEFAULT_TYPE)
         "✅ Расчет завершен!\nИтоговая стоимость: 1 000 000 ₽",
         reply_markup=ReplyKeyboardRemove()
     )
+    return ConversationHandler.END
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Отмена диалога."""
@@ -45,13 +47,22 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 def main() -> None:
     """Запуск бота."""
+    # Получение токена из переменных окружения
+    token = os.getenv("TELEGRAM_TOKEN")
+    if not token:
+        logger.error("Не найден токен Telegram. Установите переменную окружения TELEGRAM_TOKEN.")
+        return
+    
     keep_alive()  # Активируем веб-сервер
     
-    application = Application.builder().token(os.getenv("7575688103:AAFLwPlKHuNLBPUv5VnBupzVe_1W6SNf1zc")).build()
+    application = Application.builder().token(token).build()
 
     # Настройка обработчиков
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("start", start)],
+        entry_points=[
+            CommandHandler("start", start),
+            MessageHandler(filters.Regex("^Рассчитать стоимость$"), handle_calculation)
+        ],
         states={
             CALCULATING: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_calculation)],
         },
