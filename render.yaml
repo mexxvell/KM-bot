@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: my-bot-service
+    env: python
+    plan: free
+    buildCommand: "pip install python-telegram-bot==13.7 && pip install -r requirements.txt"
+    startCommand: "python app.py"
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        value: ${TELEGRAM_BOT_TOKEN}
+      - key: FLASK_ENV
+        value: production
